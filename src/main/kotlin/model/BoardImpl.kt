@@ -3,34 +3,52 @@ package model
 import java.lang.UnsupportedOperationException
 
 class BoardImpl : Board {
-    private var board: Array<IntArray> = Array(Constants.BOARD_HEIGHT) { IntArray(Constants.BOARD_WIDTH) }
+    //    private var board: Array<IntArray> = Array(Constants.BOARD_HEIGHT) { IntArray(Constants.BOARD_WIDTH) }
     private var whiteMove = true
     private var castleAllowed = mutableListOf(true, true, true, true) // w-k, w-q, b-k, b-q
     private var numMoves = 0
 
-    init {
-        clear()
-    }
+    // Map of location to piece
+    private var whitePieces = HashMap<Pair<Int, Int>, Piece>()
+    private var blackPieces = HashMap<Pair<Int, Int>, Piece>()
 
-    /** Clears this board */
-    private fun clear() {
+    override fun clear() {
         whiteMove = true
         castleAllowed = mutableListOf(true, true, true, true)
         numMoves = 0
-        for (i in board.indices) {
-            val row = IntArray(board[i].size)
-            for (j in row.indices) {
-                row[j] = Constants.EMPTY_SQUARE
-            }
-            board[i] = row
-        }
+        whitePieces.clear()
+        blackPieces.clear()
     }
 
     override fun getPiece(rank: Int, column: Int): Int {
-        return board[rank][column]
+        val loc = Pair(rank, column)
+        if (whitePieces.containsKey(loc)) {
+            return whitePieces[loc]?.toValue() ?: Constants.EMPTY_SQUARE
+        } else if (blackPieces.containsKey(loc)) {
+            return blackPieces[loc]?.toValue() ?: Constants.EMPTY_SQUARE
+        }
+        return Constants.EMPTY_SQUARE
+    }
+
+    override fun getReadOnlyBoard(): Array<IntArray> {
+        val readOnlyBoard = Array(Constants.BOARD_HEIGHT) { IntArray(Constants.BOARD_WIDTH) }
+        for (i in readOnlyBoard.indices) {
+            val row = IntArray(readOnlyBoard[i].size)
+            for (j in row.indices) {
+                row[j] = getPiece(i, j)
+            }
+            readOnlyBoard[i] = row
+        }
+        return readOnlyBoard
+    }
+
+    override fun getMoves(): MutableList<Move> {
+        TODO("Not yet implemented")
     }
 
     override fun loadFEN(s: String) {
+        clear()
+
         val ranks = s.split("/")
         val extraneous = ranks.last().split(" ").drop(1)
         // Fill in each row based on the rank
@@ -47,22 +65,26 @@ class BoardImpl : Board {
                     offset += c.digitToInt() - 1
                     continue
                 }
+                // Check color
+                var white = false
+
                 // Convert the char to piece
-                var piece = when (c.lowercaseChar()) {
-                    'p' -> Constants.PAWN
-                    'b' -> Constants.BISHOP
-                    'n' -> Constants.KNIGHT
-                    'k' -> Constants.KING
-                    'r' -> Constants.ROOK
-                    'q' -> Constants.QUEEN
+                val piece = when (c.lowercaseChar()) {
+                    'p' -> Pawn()
+                    'b' -> Bishop()
+                    'n' -> Knight()
+                    'k' -> King()
+                    'r' -> Rook()
+                    'q' -> Queen()
                     else -> throw UnsupportedOperationException("Invalid char in FEN: \'$c\'")
                 }
-                // Piece is white
-                if (c.isUpperCase()) {
-                    piece += Constants.WHITE
-                }
                 // Add to board
-                board[row - 1][i + offset] = piece
+                if (c.isUpperCase()) {
+                    piece.setWhite()
+                    whitePieces[Pair(row, i + offset + 1)] = piece
+                } else {
+                    blackPieces[Pair(row, i + offset + 1)] = piece
+                }
             }
             row--
         }
@@ -77,7 +99,7 @@ class BoardImpl : Board {
         // What forms of castling are allowed
         castleAllowed = mutableListOf(false, false, false, false)
         for (c in extraneous[1]) {
-            when(c){
+            when (c) {
                 'K' -> castleAllowed[0] = true
                 'Q' -> castleAllowed[1] = true
                 'k' -> castleAllowed[2] = true
@@ -87,28 +109,6 @@ class BoardImpl : Board {
         // TODO: En Passant Square
         // TODO: Half-move clock
         numMoves = extraneous[4][0].digitToInt()
-    }
-
-    override fun printToConsole() {
-        println("Total Moves: $numMoves")
-        if(whiteMove) println("White to Move")
-        else println("Black to Move")
-
-        for (row in board.reversedArray()) {
-            println(row.joinToString(separator = " "))
-        }
-    }
-
-    override fun getReadOnlyBoard(): Array<IntArray> {
-        val readOnlyBoard = Array(Constants.BOARD_HEIGHT) { IntArray(Constants.BOARD_WIDTH) }
-        for (i in board.indices) {
-            val row = IntArray(board[i].size)
-            for (j in row.indices) {
-                row[j] = Constants.EMPTY_SQUARE
-            }
-            readOnlyBoard[i] = row
-        }
-        return readOnlyBoard
     }
 
 

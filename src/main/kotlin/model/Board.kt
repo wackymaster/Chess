@@ -13,6 +13,11 @@ interface Board {
     fun getPiece(rank: Int, column: Int): Int
 
     /**
+     * Clears/Resets this of all pieces
+     */
+    fun clear()
+
+    /**
      * Loads in a chess board based on the FEN string.
      * Requires: s is valid
      * @param s: FEN string to input, example:
@@ -20,8 +25,5 @@ interface Board {
      */
     fun loadFEN(s: String)
 
-    /**
-     * For debugging mostly, prints the board to console
-     */
-    fun printToConsole()
+    fun getMoves() : MutableList<Move>
 }
