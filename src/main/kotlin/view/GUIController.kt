@@ -1,10 +1,12 @@
 package view
 
+import javafx.event.EventHandler
 import javafx.scene.Group
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.image.Image
+import javafx.scene.input.MouseEvent
 import javafx.scene.paint.Color
 import javafx.stage.Stage
 import model.*
@@ -26,19 +28,26 @@ class GUIController(primaryStage: Stage) {
                 pieceImages[coloredPiece] = Image(url.toString())
             }
         }
-
-
         // JavaFX GUI Setup
         val width = GUIConstants.WINDOW_WIDTH
         val height = GUIConstants.WINDOW_HEIGHT
         val root = Group()
         val s = Scene(root, width, height)
         chessCanvas = Canvas(width, height)
+
+        // World Object Viewer
+        chessCanvas.onMouseClicked = handleMouseClick()
         root.add(chessCanvas)
         primaryStage.apply {
             scene = s
         }
         draw()
+    }
+
+    private fun handleMouseClick() = EventHandler { e: MouseEvent? ->
+        if (e != null) {
+            println(e.x.toString() + ", " + e.y.toString())
+        }
     }
 
     private fun draw() {
@@ -69,7 +78,7 @@ class GUIController(primaryStage: Stage) {
                 color = if ((rank + column) % 2 == 0) GUIConstants.DARK_COLOR
                 else GUIConstants.LIGHT_COLOR
                 // Get the piece
-                val piece = board.getPiece(rank, column)
+                val piece = board.getPieceVal(rank, column)
                 drawSquare(
                     marginX + (column - 1) * squareWidth,
                     marginY + (8 - rank) * squareHeight,

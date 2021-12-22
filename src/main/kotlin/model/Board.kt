@@ -10,7 +10,13 @@ interface Board {
      * Gets the integer value associated with the piece at @rank, @column
      * Requires: rank, column are in the bounds of the board
      */
-    fun getPiece(rank: Int, column: Int): Int
+    fun getPieceVal(rank: Int, column: Int): Int
+
+    /**
+     * Gets the Piece associated with the piece at @rank, @column
+     * Requires: rank, column are in the bounds of the board
+     */
+    fun getPiece(rank: Int, column: Int): Piece?
 
     /**
      * Clears/Resets this of all pieces

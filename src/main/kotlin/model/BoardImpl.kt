@@ -20,7 +20,7 @@ class BoardImpl : Board {
         blackPieces.clear()
     }
 
-    override fun getPiece(rank: Int, column: Int): Int {
+    override fun getPieceVal(rank: Int, column: Int): Int {
         val loc = Pair(rank, column)
         if (whitePieces.containsKey(loc)) {
             return whitePieces[loc]?.toValue() ?: Constants.EMPTY_SQUARE
@@ -30,12 +30,22 @@ class BoardImpl : Board {
         return Constants.EMPTY_SQUARE
     }
 
+    override fun getPiece(rank: Int, column: Int): Piece? {
+        val loc = Pair(rank, column)
+        if (whitePieces.containsKey(loc)) {
+            return whitePieces[loc]
+        } else if (blackPieces.containsKey(loc)) {
+            return blackPieces[loc]
+        }
+        return null
+    }
+
     override fun getReadOnlyBoard(): Array<IntArray> {
         val readOnlyBoard = Array(Constants.BOARD_HEIGHT) { IntArray(Constants.BOARD_WIDTH) }
         for (i in readOnlyBoard.indices) {
             val row = IntArray(readOnlyBoard[i].size)
             for (j in row.indices) {
-                row[j] = getPiece(i, j)
+                row[j] = getPieceVal(i, j)
             }
             readOnlyBoard[i] = row
         }
