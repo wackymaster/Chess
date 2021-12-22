@@ -26,6 +26,10 @@ class BoardImpl : Board {
         }
     }
 
+    override fun getPiece(rank: Int, column: Int): Int {
+        return board[rank][column]
+    }
+
     override fun loadFEN(s: String) {
         val ranks = s.split("/")
         val extraneous = ranks.last().split(" ").drop(1)

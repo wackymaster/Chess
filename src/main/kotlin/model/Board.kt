@@ -4,7 +4,13 @@ interface Board {
     /**
      * Returns a read-only version of the board as a 2-D array
      */
-    fun getReadOnlyBoard() : Array<IntArray>
+    fun getReadOnlyBoard(): Array<IntArray>
+
+    /**
+     * Gets the integer value associated with the piece at @rank, @column
+     * Requires: rank, column are in the bounds of the board
+     */
+    fun getPiece(rank: Int, column: Int): Int
 
     /**
      * Loads in a chess board based on the FEN string.

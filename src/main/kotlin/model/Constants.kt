@@ -13,4 +13,6 @@ object Constants {
     const val QUEEN = 6
 
     const val WHITE = 7
+
+    const val STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 }
