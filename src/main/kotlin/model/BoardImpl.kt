@@ -75,9 +75,6 @@ class BoardImpl : Board {
                     offset += c.digitToInt() - 1
                     continue
                 }
-                // Check color
-                var white = false
-
                 // Convert the char to piece
                 val piece = when (c.lowercaseChar()) {
                     'p' -> Pawn()
