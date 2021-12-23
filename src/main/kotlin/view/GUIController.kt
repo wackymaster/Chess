@@ -13,6 +13,7 @@ import javafx.stage.Stage
 import model.*
 import tornadofx.add
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 class GUIController(primaryStage: Stage) {
     private var chessCanvas: Canvas
@@ -58,7 +59,7 @@ class GUIController(primaryStage: Stage) {
             val squareHeight = boardHeight / Constants.BOARD_HEIGHT
             val rank = 1 + Constants.BOARD_HEIGHT - ((e.y + squareHeight / 2 - marginY) / squareHeight)
             val column = ((e.x + squareWidth / 2 - marginX) / squareWidth)
-            if (rank < 1 || rank > Constants.BOARD_HEIGHT || column < 1 || column > Constants.BOARD_WIDTH) {
+            if (rank.roundToInt() < 1 || rank.roundToInt() > Constants.BOARD_HEIGHT || column.roundToInt() < 1 || column.roundToInt() > Constants.BOARD_WIDTH) {
                 return@EventHandler
             }
 
@@ -68,9 +69,10 @@ class GUIController(primaryStage: Stage) {
                 maybePiece
             } else {
                 val possibleMove = Move(selectedPiece!!, Pair(rank.roundToInt(), column.roundToInt()))
-                if (board.performMove(possibleMove)) {
+                if (board.performMove(possibleMove) && board.getStatus().first) {
                     val adversary = RandomAdversary()
-                    board.performMove(adversary.makeMove(board))
+                    val move = adversary.makeMove(board)
+                    board.performMove(move)
                 }
                 null // Reset the selected piece
             }
@@ -82,6 +84,32 @@ class GUIController(primaryStage: Stage) {
     private fun draw() {
         val graphicsContext = chessCanvas.graphicsContext2D
         graphicsContext.drawBoard()
+//        graphicsContext.drawAttackingSquares()
+    }
+
+    private fun GraphicsContext.drawAttackingSquares() {
+        val attackingSquares = board.getAttackingSquares()
+        val boardWidth = GUIConstants.BOARD_WIDTH * GUIConstants.WINDOW_WIDTH
+        val boardHeight = GUIConstants.BOARD_HEIGHT * GUIConstants.WINDOW_HEIGHT
+        val marginX = (GUIConstants.WINDOW_WIDTH - boardWidth) / 2
+        val marginY = (GUIConstants.WINDOW_HEIGHT - boardHeight) / 2
+        stroke = Color.BLACK
+        strokeRect(marginX, marginY, boardWidth, boardHeight)
+
+        // Draw the squares
+        var color: Color
+        val squareWidth = boardWidth / Constants.BOARD_WIDTH
+        val squareHeight = boardHeight / Constants.BOARD_HEIGHT
+        for(square in attackingSquares){
+            drawSquare(
+                marginX + (square.second - 1) * squareWidth,
+                marginY + (8 - square.first) * squareHeight,
+                squareWidth,
+                squareHeight,
+                Color.RED,
+                board.getPieceVal(square.first, square.second)
+            )
+        }
     }
 
     private fun GraphicsContext.drawBoard() {
@@ -127,11 +155,7 @@ class GUIController(primaryStage: Stage) {
     }
 
     private fun GraphicsContext.drawGuide(
-        marginX: Double,
-        marginY: Double,
-        squareWidth: Double,
-        squareHeight: Double,
-        boardHeight: Double
+        marginX: Double, marginY: Double, squareWidth: Double, squareHeight: Double, boardHeight: Double
     ) {
         // Draw the numbers/letters
         fill = Color.BLACK
@@ -149,12 +173,7 @@ class GUIController(primaryStage: Stage) {
     }
 
     private fun GraphicsContext.drawSquare(
-        x: Double,
-        y: Double,
-        width: Double,
-        height: Double,
-        col: Color,
-        piece: Int
+        x: Double, y: Double, width: Double, height: Double, col: Color, piece: Int
     ) {
         fill = col
         fillRect(x, y, width, height)

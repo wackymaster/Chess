@@ -3,6 +3,7 @@ package model
 class Move(private val piece: Piece, private val loc: Pair<Int, Int>) {
     private var promotion = false
     private var capture = false
+    private var check = false
 
     fun isPromote(): Boolean {
         return promotion
@@ -18,6 +19,14 @@ class Move(private val piece: Piece, private val loc: Pair<Int, Int>) {
 
     fun setCapture() {
         capture = true
+    }
+
+    fun isCheck(): Boolean {
+        return check
+    }
+
+    fun setCheck() {
+        check = true
     }
 
     fun getPiece(): Piece {
@@ -43,6 +52,6 @@ class Move(private val piece: Piece, private val loc: Pair<Int, Int>) {
     }
 
     override fun toString(): String {
-        return "Piece $piece to $loc. Promote: $promotion. Capture: $capture"
+        return "Piece $piece to $loc. Promote: $promotion. Capture: $capture. Check: $check"
     }
 }

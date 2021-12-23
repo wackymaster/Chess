@@ -3,7 +3,6 @@ package model
 import java.lang.UnsupportedOperationException
 
 class BoardImpl : Board {
-    //    private var board: Array<IntArray> = Array(Constants.BOARD_HEIGHT) { IntArray(Constants.BOARD_WIDTH) }
     private var whiteMove = true
     private var castleAllowed = mutableListOf(true, true, true, true) // w-k, w-q, b-k, b-q
     private var numMoves = 0
@@ -100,17 +99,61 @@ class BoardImpl : Board {
         }
     }
 
-    override fun performMove(move: Move) : Boolean {
+    override fun performMoveNoCheck(move: Move) {
+        updatePosition(move.getPiece(), move.getLoc()) // Update position of piece
+        if (move.isCapture()) capturePiece(move.getPiece(), move.getLoc())
+        if (move.isPromote()) promotePiece(move.getPiece(), move.getLoc())
+        whiteMove = !whiteMove
+        return
+    }
+
+    override fun performMove(move: Move): Boolean {
         val legalMoves = getMoves()
         if (move !in legalMoves) {
             return false
         }
+        // Determine full details of the move
         val corrMove = legalMoves.first { it == move }
         updatePosition(corrMove.getPiece(), corrMove.getLoc()) // Update position of piece
         if (corrMove.isCapture()) capturePiece(corrMove.getPiece(), corrMove.getLoc())
         if (corrMove.isPromote()) promotePiece(corrMove.getPiece(), corrMove.getLoc())
         whiteMove = !whiteMove
+        println(corrMove.toString())
         return true
+    }
+
+    override fun getAttackingSquares(): MutableList<Pair<Int, Int>> {
+        val attackingSquares = mutableListOf<Pair<Int, Int>>()
+        blackPieces.forEach { (loc, piece) -> attackingSquares.addAll(piece.getAttackingSquares(loc, this)) }
+        return attackingSquares
+    }
+
+    override fun whiteChecked(): Boolean {
+        val attackingSquares = mutableListOf<Pair<Int, Int>>()
+        blackPieces.forEach { (loc, piece) -> attackingSquares.addAll(piece.getAttackingSquares(loc, this)) }
+        val kingLocation = whitePieces.filterValues { it is King }.keys.first()
+        return kingLocation in attackingSquares
+    }
+
+    override fun blackChecked(): Boolean {
+        val attackingSquares = mutableListOf<Pair<Int, Int>>()
+        whitePieces.forEach { (loc, piece) -> attackingSquares.addAll(piece.getAttackingSquares(loc, this)) }
+        val kingLocation = blackPieces.filterValues { it is King }.keys.first()
+        return kingLocation in attackingSquares
+    }
+
+    override fun getStatus(): Pair<Boolean, Int> {
+        val legalMoves = getMoves()
+        if (legalMoves.isEmpty()) {
+            if (whiteMove) {
+                if (whiteChecked()) {
+                    return Pair(false, -1)
+                }
+                return Pair(false, 0)
+            }
+            return Pair(false, if (blackChecked()) 1 else 0)
+        }
+        return Pair(true, 0)
     }
 
     override fun loadFEN(s: String) {
@@ -173,6 +216,16 @@ class BoardImpl : Board {
         // TODO: En Passant Square
         // TODO: Half-move clock
         numMoves = extraneous[4][0].digitToInt()
+    }
+
+    override fun clone(): Board {
+        val clone = BoardImpl()
+        clone.whiteMove = this.whiteMove
+        clone.castleAllowed = this.castleAllowed.toMutableList()
+        clone.numMoves = this.numMoves
+        clone.whitePieces = HashMap(this.whitePieces)
+        clone.blackPieces = HashMap(this.blackPieces)
+        return clone
     }
 
 
