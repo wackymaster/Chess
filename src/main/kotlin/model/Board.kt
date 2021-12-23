@@ -23,6 +23,8 @@ interface Board {
      */
     fun clear()
 
+    fun inBoard(rank: Int, column: Int): Boolean
+
     /**
      * Loads in a chess board based on the FEN string.
      * Requires: s is valid
@@ -31,7 +33,10 @@ interface Board {
      */
     fun loadFEN(s: String)
 
-    fun getMoves() : MutableList<Move>
+    fun getMoves(): MutableList<Move>
 
-    fun performMove(move: Move)
+    /**
+     * Attempts to perform the given move. Returns true if successful
+     */
+    fun performMove(move: Move) : Boolean
 }

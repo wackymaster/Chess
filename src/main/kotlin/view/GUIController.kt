@@ -1,5 +1,6 @@
 package view
 
+import adversary.RandomAdversary
 import javafx.event.EventHandler
 import javafx.scene.Group
 import javafx.scene.Scene
@@ -67,7 +68,10 @@ class GUIController(primaryStage: Stage) {
                 maybePiece
             } else {
                 val possibleMove = Move(selectedPiece!!, Pair(rank.roundToInt(), column.roundToInt()))
-                board.performMove(possibleMove)
+                if (board.performMove(possibleMove)) {
+                    val adversary = RandomAdversary()
+                    board.performMove(adversary.makeMove(board))
+                }
                 null // Reset the selected piece
             }
             // Draw the board

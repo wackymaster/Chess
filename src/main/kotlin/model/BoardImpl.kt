@@ -20,6 +20,10 @@ class BoardImpl : Board {
         blackPieces.clear()
     }
 
+    override fun inBoard(rank: Int, column: Int): Boolean {
+        return (rank in 1..8 && column in 1..8)
+    }
+
     override fun getPieceVal(rank: Int, column: Int): Int {
         val loc = Pair(rank, column)
         if (whitePieces.containsKey(loc)) {
@@ -96,16 +100,17 @@ class BoardImpl : Board {
         }
     }
 
-    override fun performMove(move: Move) {
+    override fun performMove(move: Move) : Boolean {
         val legalMoves = getMoves()
         if (move !in legalMoves) {
-            return
+            return false
         }
         val corrMove = legalMoves.first { it == move }
         updatePosition(corrMove.getPiece(), corrMove.getLoc()) // Update position of piece
         if (corrMove.isCapture()) capturePiece(corrMove.getPiece(), corrMove.getLoc())
         if (corrMove.isPromote()) promotePiece(corrMove.getPiece(), corrMove.getLoc())
         whiteMove = !whiteMove
+        return true
     }
 
     override fun loadFEN(s: String) {

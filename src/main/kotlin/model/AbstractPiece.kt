@@ -51,4 +51,27 @@ abstract class AbstractPiece : Piece {
             moves.add(move)
         }
     }
+
+    fun addMovesFromDirections(
+        loc: Pair<Int, Int>,
+        directions: List<Pair<Int, Int>>,
+        b: Board,
+        moves: MutableList<Move>
+    ): MutableList<Move> {
+        var currentLoc: Pair<Int, Int>
+        for (dir in directions) {
+            // Location in starting direction
+            currentLoc = Pair(loc.first + dir.first, loc.second + dir.second)
+            while (b.inBoard(currentLoc.first, currentLoc.second)) {
+                val piece = b.getPiece(currentLoc.first, currentLoc.second)
+                ifEmptyAddMove(this, b, currentLoc, moves)
+                if (piece is Piece) {
+                    ifCaptureAddMove(this, b, currentLoc, moves)
+                    break
+                }
+                currentLoc = Pair(currentLoc.first + dir.first, currentLoc.second + dir.second)
+            }
+        }
+        return moves
+    }
 }
