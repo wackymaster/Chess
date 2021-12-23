@@ -1,9 +1,12 @@
 package adversary
 
 import model.Board
+import model.BoardImpl
 import model.Move
 
-class DepthAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 3) {
+class TransposedDFS(white: Boolean) : Adversary, AbstractAdversary(white, 3) {
+    private val transpositionTable = HashMap<Array<IntArray>, Pair<Int, Move?>>()
+
     override fun pickMove(board: Board): Move {
         val moves = board.getMoves()
         val startTime = System.nanoTime()
@@ -16,8 +19,16 @@ class DepthAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 3) {
     }
 
     private fun search(depth: Int = 0, board: Board): Triple<Int, Int, Move?> {
+        // Apply memoization
+        val boardKey = board.getReadOnlyBoard()
+        if (transpositionTable.containsKey(boardKey)) {
+            val lookup = transpositionTable[boardKey]!!
+            return Triple(lookup.first, 1, lookup.second)
+        }
+        // Proceed
         val depthOrDone = checkDepthAndStatus(depth, board)
         if (depthOrDone.first) {
+            transpositionTable[boardKey] = Pair(depthOrDone.second, null)
             return Triple(depthOrDone.second, 1, null)
         }
         val moves = board.getMoves()
@@ -35,6 +46,7 @@ class DepthAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 3) {
                 bestScore = score
             }
         }
+        transpositionTable[boardKey] = Pair(bestScore, bestMove)
         return Triple(bestScore, positionsEvaluated, bestMove)
     }
 

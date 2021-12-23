@@ -1,7 +1,7 @@
 package view
 
+import adversary.Adversary
 import adversary.AdversaryFactory
-import adversary.RandomAdversary
 import javafx.event.EventHandler
 import javafx.scene.Group
 import javafx.scene.Scene
@@ -14,14 +14,13 @@ import javafx.stage.Stage
 import model.*
 import tornadofx.add
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 class GUIController(primaryStage: Stage) {
     private var chessCanvas: Canvas
     private var board: Board = BoardImpl()
     private var pieceImages = HashMap<Int, Image>()
     private var selectedPiece: Piece? = null
-
+    private val adversary: Adversary = AdversaryFactory().getAlphaBetaAdversary(false)
     init {
         // Set up the game board
         board.loadFEN(Constants.STARTING_FEN)
@@ -71,8 +70,7 @@ class GUIController(primaryStage: Stage) {
             } else {
                 val possibleMove = Move(selectedPiece!!, Pair(rank.roundToInt(), column.roundToInt()))
                 if (board.performMove(possibleMove) && board.getStatus().first) {
-                    val adversary = AdversaryFactory().getAlphaBetaAdversary(false)
-                    val move = adversary.makeMove(board)
+                    val move = adversary.pickMove(board)
                     board.performMove(move)
                 }
                 null // Reset the selected piece

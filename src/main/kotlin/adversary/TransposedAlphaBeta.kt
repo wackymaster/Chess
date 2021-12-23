@@ -1,14 +1,16 @@
 package adversary
 
 import model.Board
+import model.BoardImpl
 import model.Move
 
-class AlphaBetaAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 5) {
+class TransposedAlphaBeta(white: Boolean) : Adversary, AbstractAdversary(white, 4) {
+    private val transpositionTable = HashMap<Array<IntArray>, Pair<Int, Move?>>()
 
     override fun pickMove(board: Board): Move {
         val moves = board.getMoves()
         val startTime = System.nanoTime()
-        val decision = search(isMaximizing = false, alpha = Int.MIN_VALUE, beta = Int.MAX_VALUE, board = board)
+        val decision = search(isMaximizing = true, alpha = Int.MIN_VALUE, beta = Int.MAX_VALUE, board = board)
         println("Took " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds")
         println("Decided move was " + decision.third + ", score of " + decision.first + ", Positions evaluated: " + decision.second)
         val move = decision.third
@@ -30,6 +32,12 @@ class AlphaBetaAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 5
         beta: Int,
         board: Board
     ): Triple<Int, Int, Move?> {
+        // Apply memoization
+        val boardKey = board.getReadOnlyBoard()
+        if (transpositionTable.containsKey(boardKey)) {
+            val lookup = transpositionTable[boardKey]!!
+            return Triple(lookup.first, 1, lookup.second)
+        }
         // If we have reached maximum depth or the game is over, return the board evaluation
         val depthOrDone = checkDepthAndStatus(depth, board)
         if (depthOrDone.first) {
@@ -60,6 +68,7 @@ class AlphaBetaAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 5
                 if (bestScore > a) a = bestScore
                 if (b <= a) break
             }
+            transpositionTable[boardKey] = Pair(depthOrDone.second, null)
             return Triple(bestScore, positionsEvaluated, bestMove)
         } else {  // Minimizing score
             var bestScore = Int.MAX_VALUE
@@ -77,6 +86,7 @@ class AlphaBetaAdversary(white: Boolean) : Adversary, AbstractAdversary(white, 5
                 if (bestScore < b) b = bestScore
                 if (b <= a) break
             }
+            transpositionTable[boardKey] = Pair(bestScore, bestMove)
             return Triple(bestScore, positionsEvaluated, bestMove)
         }
     }

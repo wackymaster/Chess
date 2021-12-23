@@ -12,4 +12,12 @@ class AdversaryFactory {
     fun getAlphaBetaAdversary(white: Boolean): Adversary {
         return AlphaBetaAdversary(white)
     }
+
+    fun getTransposedDFS(white: Boolean): Adversary {
+        return TransposedDFS(white)
+    }
+
+    fun getTransposedAlphaBeta(white: Boolean): Adversary {
+        return TransposedAlphaBeta(white)
+    }
 }
