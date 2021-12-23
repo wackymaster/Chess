@@ -23,6 +23,10 @@ class BoardImpl : Board {
         return (rank in 1..8 && column in 1..8)
     }
 
+    override fun isWhiteMove(): Boolean {
+        return whiteMove
+    }
+
     override fun getPieceVal(rank: Int, column: Int): Int {
         val loc = Pair(rank, column)
         if (whitePieces.containsKey(loc)) {
@@ -48,7 +52,7 @@ class BoardImpl : Board {
         for (i in readOnlyBoard.indices) {
             val row = IntArray(readOnlyBoard[i].size)
             for (j in row.indices) {
-                row[j] = getPieceVal(i, j)
+                row[j] = getPieceVal(i + 1, j + 1)
             }
             readOnlyBoard[i] = row
         }
@@ -143,15 +147,17 @@ class BoardImpl : Board {
     }
 
     override fun getStatus(): Pair<Boolean, Int> {
-        val legalMoves = getMoves()
-        if (legalMoves.isEmpty()) {
-            if (whiteMove) {
-                if (whiteChecked()) {
-                    return Pair(false, -1)
-                }
-                return Pair(false, 0)
+        if(whiteChecked()){
+            val legalMoves = getMoves()
+            if(whiteMove){
+                return Pair(legalMoves.isNotEmpty(), -1) // Black wins
             }
-            return Pair(false, if (blackChecked()) 1 else 0)
+        }
+        else if(blackChecked()){
+            val legalMoves = getMoves()
+            if(!whiteMove){
+                return Pair(legalMoves.isNotEmpty(), 1) // White wins
+            }
         }
         return Pair(true, 0)
     }
@@ -227,6 +233,5 @@ class BoardImpl : Board {
         clone.blackPieces = HashMap(this.blackPieces)
         return clone
     }
-
 
 }

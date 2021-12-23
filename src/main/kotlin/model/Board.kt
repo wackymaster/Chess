@@ -13,6 +13,8 @@ interface Board {
      */
     fun getStatus() : Pair<Boolean, Int>
 
+    fun isWhiteMove() : Boolean
+
     /**
      * Gets the integer value associated with the piece at @rank, @column
      * Requires: rank, column are in the bounds of the board

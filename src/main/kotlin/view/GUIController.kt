@@ -1,5 +1,6 @@
 package view
 
+import adversary.AdversaryFactory
 import adversary.RandomAdversary
 import javafx.event.EventHandler
 import javafx.scene.Group
@@ -70,7 +71,7 @@ class GUIController(primaryStage: Stage) {
             } else {
                 val possibleMove = Move(selectedPiece!!, Pair(rank.roundToInt(), column.roundToInt()))
                 if (board.performMove(possibleMove) && board.getStatus().first) {
-                    val adversary = RandomAdversary()
+                    val adversary = AdversaryFactory().getAlphaBetaAdversary(false)
                     val move = adversary.makeMove(board)
                     board.performMove(move)
                 }
@@ -97,7 +98,6 @@ class GUIController(primaryStage: Stage) {
         strokeRect(marginX, marginY, boardWidth, boardHeight)
 
         // Draw the squares
-        var color: Color
         val squareWidth = boardWidth / Constants.BOARD_WIDTH
         val squareHeight = boardHeight / Constants.BOARD_HEIGHT
         for(square in attackingSquares){
