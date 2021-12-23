@@ -8,6 +8,8 @@ interface Piece {
 
     fun isWhite(): Boolean
 
+    fun setBlack()
+
     fun setWhite()
 
     /**

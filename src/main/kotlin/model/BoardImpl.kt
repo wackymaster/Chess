@@ -53,7 +53,59 @@ class BoardImpl : Board {
     }
 
     override fun getMoves(): MutableList<Move> {
-        TODO("Not yet implemented")
+        val allMoves = mutableListOf<Move>()
+        if (whiteMove) {
+            whitePieces.forEach { (loc, piece) -> allMoves.addAll(piece.getMoves(loc, this)) }
+        } else {
+            blackPieces.forEach { (loc, piece) -> allMoves.addAll(piece.getMoves(loc, this)) }
+        }
+        return allMoves
+    }
+
+    private fun updatePosition(piece: Piece, loc: Pair<Int, Int>) {
+        if (piece.isWhite()) {
+            val oldLocations = whitePieces.filterValues { it == piece }.keys
+            whitePieces.remove(oldLocations.first())
+            whitePieces[loc] = piece
+        } else {
+            val oldLocations = blackPieces.filterValues { it == piece }.keys
+            blackPieces.remove(oldLocations.first())
+            blackPieces[loc] = piece
+        }
+    }
+
+    private fun capturePiece(piece: Piece, loc: Pair<Int, Int>) {
+        if (piece.isWhite()) {
+            blackPieces.remove(loc)
+        } else {
+            whitePieces.remove(loc)
+        }
+    }
+
+    private fun promotePiece(piece: Piece, loc: Pair<Int, Int>) {
+        if (piece.isWhite()) {
+            whitePieces.remove(loc)
+            val newPiece = Queen()
+            newPiece.setWhite()
+            whitePieces[loc] = newPiece
+        } else {
+            blackPieces.remove(loc)
+            val newPiece = Queen()
+            newPiece.setBlack()
+            blackPieces[loc] = newPiece
+        }
+    }
+
+    override fun performMove(move: Move) {
+        val legalMoves = getMoves()
+        if (move !in legalMoves) {
+            return
+        }
+        val corrMove = legalMoves.first { it == move }
+        updatePosition(corrMove.getPiece(), corrMove.getLoc()) // Update position of piece
+        if (corrMove.isCapture()) capturePiece(corrMove.getPiece(), corrMove.getLoc())
+        if (corrMove.isPromote()) promotePiece(corrMove.getPiece(), corrMove.getLoc())
+        whiteMove = !whiteMove
     }
 
     override fun loadFEN(s: String) {

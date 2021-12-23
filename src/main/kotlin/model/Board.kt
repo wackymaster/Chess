@@ -32,4 +32,6 @@ interface Board {
     fun loadFEN(s: String)
 
     fun getMoves() : MutableList<Move>
+
+    fun performMove(move: Move)
 }

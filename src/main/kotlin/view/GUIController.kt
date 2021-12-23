@@ -11,11 +11,13 @@ import javafx.scene.paint.Color
 import javafx.stage.Stage
 import model.*
 import tornadofx.add
+import kotlin.math.roundToInt
 
 class GUIController(primaryStage: Stage) {
     private var chessCanvas: Canvas
     private var board: Board = BoardImpl()
     private var pieceImages = HashMap<Int, Image>()
+    private var selectedPiece: Piece? = null
 
     init {
         // Set up the game board
@@ -46,7 +48,30 @@ class GUIController(primaryStage: Stage) {
 
     private fun handleMouseClick() = EventHandler { e: MouseEvent? ->
         if (e != null) {
-            println(e.x.toString() + ", " + e.y.toString())
+            // Find the corresponding square
+            val boardWidth = GUIConstants.BOARD_WIDTH * GUIConstants.WINDOW_WIDTH
+            val boardHeight = GUIConstants.BOARD_HEIGHT * GUIConstants.WINDOW_HEIGHT
+            val marginX = (GUIConstants.WINDOW_WIDTH - boardWidth) / 2
+            val marginY = (GUIConstants.WINDOW_HEIGHT - boardHeight) / 2
+            val squareWidth = boardWidth / Constants.BOARD_WIDTH
+            val squareHeight = boardHeight / Constants.BOARD_HEIGHT
+            val rank = 1 + Constants.BOARD_HEIGHT - ((e.y + squareHeight / 2 - marginY) / squareHeight)
+            val column = ((e.x + squareWidth / 2 - marginX) / squareWidth)
+            if (rank < 1 || rank > Constants.BOARD_HEIGHT || column < 1 || column > Constants.BOARD_WIDTH) {
+                return@EventHandler
+            }
+
+            val maybePiece = board.getPiece(rank.roundToInt(), column.roundToInt())
+            // If no piece is currently selected, select one
+            selectedPiece = if (selectedPiece == null) {
+                maybePiece
+            } else {
+                val possibleMove = Move(selectedPiece!!, Pair(rank.roundToInt(), column.roundToInt()))
+                board.performMove(possibleMove)
+                null // Reset the selected piece
+            }
+            // Draw the board
+            draw()
         }
     }
 
@@ -70,22 +95,27 @@ class GUIController(primaryStage: Stage) {
 
         // Draw the squares
         var color: Color
-        val squareWidth = boardWidth / 8
-        val squareHeight = boardHeight / 8
-        for (rank in 1..8) {
-            for (column in 1..8) {
+        val squareWidth = boardWidth / Constants.BOARD_WIDTH
+        val squareHeight = boardHeight / Constants.BOARD_HEIGHT
+        for (rank in 1..Constants.BOARD_HEIGHT) {
+            for (column in 1..Constants.BOARD_WIDTH) {
                 // Shade in the square
                 color = if ((rank + column) % 2 == 0) GUIConstants.DARK_COLOR
                 else GUIConstants.LIGHT_COLOR
-                // Get the piece
-                val piece = board.getPieceVal(rank, column)
+                // Get the piece, highlight if needed
+                val piece = board.getPiece(rank, column)
+                val pieceVal = board.getPieceVal(rank, column)
+                if (selectedPiece != null && selectedPiece == piece) color =
+                    if ((rank + column) % 2 == 0) GUIConstants.SELECTED_COLOR_DARK
+                    else GUIConstants.SELECTED_COLOR_LIGHT
+                // Draw
                 drawSquare(
                     marginX + (column - 1) * squareWidth,
                     marginY + (8 - rank) * squareHeight,
                     squareWidth,
                     squareHeight,
                     color,
-                    piece
+                    pieceVal
                 )
             }
         }
